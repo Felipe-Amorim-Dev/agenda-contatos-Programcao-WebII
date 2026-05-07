@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Contato {
+  id         String   @id @default(uuid())
+  nome       String
+  sobrenome  String
+  email      String   @unique
+  telefone   String
+  endereco   String
+  ativo      Boolean  @default(true)
+  criadoEm   DateTime @default(now())
+  alteradoEm DateTime @updatedAt
+
+  @@map("contatos")
+}
