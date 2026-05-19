@@ -1,5 +1,3 @@
-import client = require("@prisma/client/runtime/client");
-
 export class Contato {
     id: string;
     nome: string;
@@ -11,7 +9,7 @@ export class Contato {
     criadoEm: Date;
     alteradoEm: Date;
 
-    constructor(data: Contato){
+    constructor(data: Contato) {
         this.id = data.id;
         this.nome = data.nome;
         this.sobrenome = data.sobrenome;
