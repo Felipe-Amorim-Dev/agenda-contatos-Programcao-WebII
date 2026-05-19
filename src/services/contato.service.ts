@@ -1,4 +1,3 @@
-import { email } from "zod";
 import { CreateContatoDto } from "../dtos/create-contato.dto";
 import { UpdateContatoDto } from "../dtos/update-contato.dto";
 import { IContatoRepository } from "../interfaces/contato-repository.interface";
@@ -7,7 +6,6 @@ import { Contato } from "../models/Contato.model";
 import { ContatoRepository } from "../repositories/contato.repository";
 
 export class ContatoService implements IContatoService {
-
     private readonly contatoRepository: IContatoRepository;
 
     constructor() {
@@ -28,19 +26,9 @@ export class ContatoService implements IContatoService {
         return contato;
     }
 
-    async buscarPorEmail(email: string): Promise<Contato> {
-        const contato = await this.contatoRepository.buscarPorEmail(email);
-
-        if (!contato) {
-            throw new Error("Contato não encontrado.");
-        }
-
-        return contato;
-    }
-
-    async criar(dto: CreateContatoDto): Promise<Contato>{
-        if (!dto.nome || !dto.sobrenome || !dto.email || !dto.telefone ) {
-            throw new Error("Nome, Sobrenome, email, telefone são obrigatório.")
+    async criar(dto: CreateContatoDto): Promise<Contato> {
+        if (!dto.nome || !dto.sobrenome || !dto.email || !dto.telefone || !dto.endereco) {
+            throw new Error("Nome, sobrenome, email, telefone e endereço são obrigatórios.");
         }
 
         const emailExiste = await this.contatoRepository.buscarPorEmail(dto.email);
@@ -49,16 +37,20 @@ export class ContatoService implements IContatoService {
             throw new Error("Já existe um contato com esse email cadastrado.");
         }
 
-        return await this.contatoRepository.criar(dto)
+        return await this.contatoRepository.criar(dto);
     }
 
     async atualizar(id: string, dto: UpdateContatoDto): Promise<Contato> {
-        await this.contatoRepository.buscarPorId(id);
+        const contatoAtual = await this.contatoRepository.buscarPorId(id);
+
+        if (!contatoAtual) {
+            throw new Error("Contato não encontrado.");
+        }
 
         if (dto.email) {
             const emailExiste = await this.contatoRepository.buscarPorEmail(dto.email);
 
-            if (emailExiste) {
+            if (emailExiste && emailExiste.id !== id) {
                 throw new Error("Já existe outro contato com esse email.");
             }
         }
@@ -67,13 +59,21 @@ export class ContatoService implements IContatoService {
     }
 
     async excluir(id: string): Promise<void> {
-        await this.contatoRepository.buscarPorId(id);
+        const contato = await this.contatoRepository.buscarPorId(id);
+
+        if (!contato) {
+            throw new Error("Contato não encontrado.");
+        }
 
         await this.contatoRepository.excluir(id);
     }
 
     async inativar(id: string): Promise<Contato> {
-        await this.contatoRepository.buscarPorId(id);
+        const contato = await this.contatoRepository.buscarPorId(id);
+
+        if (!contato) {
+            throw new Error("Contato não encontrado.");
+        }
 
         return await this.contatoRepository.atualizar(id, {
             ativo: false
